@@ -38,6 +38,9 @@ local ticksBetweenAsteroids = 30
 local targetPlayerY = 15
 local mainStarfield = nil
 
+local score = 0
+local highScore = 0
+
 -- A function to set up our game environment.
 
 function loadAssets()
@@ -50,9 +53,10 @@ end
 playdate.ui.crankIndicator:start()
 
 function StatePlaying:init()
-    loadAssets()
+    loadAssets()    
 
     -- game values setup
+    score = 0
     ticksToAddAsteroid = 30
     ticksBetweenAsteroids = 30
 
@@ -87,7 +91,7 @@ function getYPosFromCrank()
         end
     end
 
-    local minTargetY = 10
+    local minTargetY = 30
     local maxTargetY = 230
     if not playdate.isCrankDocked() then
         return minTargetY + crankPos * (maxTargetY-minTargetY) / 180
@@ -138,11 +142,13 @@ end
 function StatePlaying:update()
     updatePlayerMovement()
 
+    score += 0.05
+
     ticksToAddAsteroid -= 1
     if ticksToAddAsteroid <= 0 then
         ticksToAddAsteroid = ticksBetweenAsteroids
         local a = Asteroid()
-        local yPos = math.random(20,220)
+        local yPos = math.random(40,220)
         local xPos = 400
         a.sprite:moveTo(xPos, yPos)
         a:addToStage()
@@ -153,6 +159,11 @@ function StatePlaying:update()
     end
 
     mainStarfield:update()
+
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillRect(0, 0, 400, 20)
+    gfx.setColor(gfx.kColorBlack)
+    gfx.drawText(string.format("%05d", math.floor(score)), 4, 2)
 end
 
 function StatePlaying:destroy()
