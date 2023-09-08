@@ -12,14 +12,16 @@ import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
 import "CoreLibs/animation"
+import "CoreLibs/ui"
 import "starfield"
 import "asteroid"
+
+local StatePlaying = {}
 
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
 -- Performance will be slightly enhanced, too.
 -- NOTE: Because it's local, you'll have to do it in every .lua source file.
-
 local gfx <const> = playdate.graphics
 
 -- Here's our player sprite declaration. We'll scope it to this file because
@@ -45,7 +47,9 @@ function loadAssets()
 
 end
 
-function myGameSetUp()
+playdate.ui.crankIndicator:start()
+
+function StatePlaying:init()
     loadAssets()
 
     -- game values setup
@@ -58,28 +62,24 @@ function myGameSetUp()
     if playerSprite ~= nil then playerSprite:remove() end
     playerSprite = gfx.sprite.new( playerImageTable:getImage(1, 1) )
     --playerSprite:setCenter()
-    playerSprite:moveTo( 40, 120 ) -- this is where the center of the sprite is placed; (200,120) is the center of the Playdate screen
+    playerSprite:moveTo( 40, getYPosFromCrank() ) 
     playerSprite:add() -- This is critical!
 
-    if mainStarfield ~= nil then mainStarfield.remove() end
+    if mainStarfield ~= nil then
+        mainStarfield.remove()
+
+     end
     gfx.setBackgroundColor(gfx.kColorBlack)
     mainStarfield = Starfield:new()
     mainStarfield:addTo(gfx)
 end
 
--- Now we'll call the function above to configure our game.
--- After this runs (it just runs once), nearly everything will be
--- controlled by the OS calling `playdate.update()` 30 times a second.
-
-myGameSetUp()
-
 -- `playdate.update()` is the heart of every Playdate game.
 -- This function is called right before every frame is drawn onscreen.
 -- Use this function to poll input, run game logic, and move sprites.
 
-function updatePlayerMovement()
+function getYPosFromCrank()
     local crankPos = playdate.getCrankPosition()
-    -- print("crankPos = "..crankPos)
     if crankPos > 180 then
         if crankPos > 270 then
             crankPos = 0
@@ -88,21 +88,23 @@ function updatePlayerMovement()
         end
     end
 
-    if playdate.buttonIsPressed(playdate.kButtonB) then
-        myGameSetUp()
+    local minTargetY = 10
+    local maxTargetY = 230
+    if not playdate.isCrankDocked() then
+        return minTargetY + crankPos * (maxTargetY-minTargetY) / 180
+    else
+        return minTargetY
     end
-    --[[if playdate.buttonIsPressed( playdate.kButtonUp ) then
-        crankPos -= 10
-    end
-    if playdate.buttonIsPressed( playdate.kButtonDown ) then
-        crankPos += 10
-    end
-    --]]
+end
 
-    local minTargetY = 20
-    local maxTargetY = 220
-    targetPlayerY = minTargetY + crankPos * (maxTargetY-minTargetY) / 180
+function updatePlayerMovement()
+    if playdate.buttonJustPressed(playdate.kButtonB) then
+        SetState(StatePlaying)
+        return
+    end
 
+    targetPlayerY = getYPosFromCrank()
+    
     local maxSpeed = 20
     local playerX, playerY = playerSprite:getPosition()
     local deltaY = targetPlayerY - playerY    
@@ -134,9 +136,7 @@ function updatePlayerMovement()
     playerSprite:setImage(playerImageTable:getImage(1, playerImageIndex))
 end
 
-function playdate.update()
-    gfx.clear()
-
+function StatePlaying:update()
     updatePlayerMovement()
 
     ticksToAddAsteroid -= 1
@@ -154,15 +154,25 @@ function playdate.update()
     end
 
     mainStarfield:update()
+end
+
+function playdate.update()
+    gfx.clear()
+
+    CurrentState:update()
+
     gfx.sprite.update()
     playdate.timer.updateTimers()
 
-    --[[
-    if math.abs(deltaY) > 1 then
-        gfx.setColor(gfx.kColorWhite)
-        gfx.fillCircleAtPoint(playerX + 6, targetPlayerY, 3)
+    if playdate.isCrankDocked() then
+        playdate.ui.crankIndicator:update()
     end
-    --]]
-
 end
+
+function SetState(state)
+    CurrentState = state
+    CurrentState:init()
+end
+
+SetState(StatePlaying)
 
