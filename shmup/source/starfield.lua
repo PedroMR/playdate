@@ -25,8 +25,10 @@ function Starfield:new()
     end
 
     function self:remove()
-        bgSprite:remove()
-        bgSprite = nil
+        if bgSprite ~= nil then
+            bgSprite:remove()
+            bgSprite = nil
+        end
     end
 
     function self:update()

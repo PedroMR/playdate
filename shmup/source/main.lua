@@ -67,8 +67,7 @@ function StatePlaying:init()
 
     if mainStarfield ~= nil then
         mainStarfield.remove()
-
-     end
+    end
     gfx.setBackgroundColor(gfx.kColorBlack)
     mainStarfield = Starfield:new()
     mainStarfield:addTo(gfx)
@@ -99,7 +98,7 @@ end
 
 function updatePlayerMovement()
     if playdate.buttonJustPressed(playdate.kButtonB) then
-        SetState(StatePlaying)
+        SetState(StateTitle)
         return
     end
 
@@ -156,13 +155,19 @@ function StatePlaying:update()
     mainStarfield:update()
 end
 
+function StatePlaying:destroy()
+    Enemy:removeAll()
+    playerSprite:remove()
+    mainStarfield:remove()
+end
+
 function playdate.update()
     gfx.clear()
 
-    CurrentState:update()
-
     gfx.sprite.update()
     playdate.timer.updateTimers()
+
+    CurrentState:update()
 
     if playdate.isCrankDocked() then
         playdate.ui.crankIndicator:update()
@@ -170,9 +175,33 @@ function playdate.update()
 end
 
 function SetState(state)
+    if CurrentState ~= nil then CurrentState:destroy() end
     CurrentState = state
     CurrentState:init()
 end
 
-SetState(StatePlaying)
+StateTitle = {}
+function StateTitle:init()
+    gfx.setBackgroundColor(gfx.kColorWhite)
+    gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
+end
+
+function StateTitle:update()    
+    local titleX, titleY = 200,60
+    gfx.drawTextAligned("*-= Asteroid Runner =-*", titleX, titleY, kTextAlignment.center)
+    local startX, startY = 200, 120
+    gfx.drawTextAligned("Press A to Start!", startX, startY, kTextAlignment.center)
+
+    if playdate.buttonJustPressed(playdate.kButtonA) then
+        SetState(StatePlaying)
+        return
+    end
+end
+
+function StateTitle:destroy()
+end
+
+
+SetState(StateTitle)
+--SetState(StatePlaying)
 
