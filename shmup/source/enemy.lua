@@ -5,6 +5,10 @@ Enemy.enemies = {}
 function Enemy:update()
 end
 
+function Enemy:collidesWithPlayer()
+    return false
+end
+
 function Enemy.removeAll()
     while #Enemy.enemies > 0 do                
         Enemy.enemies[1]:remove()

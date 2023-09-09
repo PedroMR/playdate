@@ -41,6 +41,12 @@ local mainStarfield = nil
 local score = 0
 local highScore = 0
 
+local saveData = playdate.datastore.read()
+if saveData == nil then
+    saveData = { highScore = 0 }
+end
+highScore = saveData.highScore
+
 -- A function to set up our game environment.
 
 function loadAssets()
@@ -67,6 +73,9 @@ function StatePlaying:init()
     playerSprite = gfx.sprite.new( playerImageTable:getImage(1, 1) )
     --playerSprite:setCenter()
     playerSprite:moveTo( 40, getYPosFromCrank() ) 
+    playerSprite:setGroups(GROUP_PLAYER)
+    playerSprite:setCollidesWithGroups(GROUP_ENEMIES)
+    playerSprite:setCollideRect( 0, 0, playerSprite:getSize() ) --TODO smaller
     playerSprite:add() -- This is critical!
 
     if mainStarfield ~= nil then
@@ -143,6 +152,7 @@ function StatePlaying:update()
     updatePlayerMovement()
 
     score += 0.05
+    if highScore < score then highScore = score end
 
     ticksToAddAsteroid -= 1
     if ticksToAddAsteroid <= 0 then
@@ -158,12 +168,20 @@ function StatePlaying:update()
         e:update()
     end
 
+    local overlaps = playerSprite:overlappingSprites()
+    for _, o in pairs(overlaps) do
+        if playerSprite:alphaCollision(o) then
+            SetState(StateTitle)
+        end
+    end
+
     mainStarfield:update()
 
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0, 0, 400, 20)
     gfx.setColor(gfx.kColorBlack)
-    gfx.drawText(string.format("%05d", math.floor(score)), 4, 2)
+    gfx.drawTextAligned(string.format("%05d", math.floor(score)), 4, 2)
+    gfx.drawTextAligned(string.format("%05d", math.floor(highScore)), 400-4, 2, kTextAlignment.right)
 end
 
 function StatePlaying:destroy()
@@ -201,15 +219,32 @@ function StateTitle:update()
     local titleX, titleY = 200,60
     gfx.drawTextAligned("*-= Asteroid Runner =-*", titleX, titleY, kTextAlignment.center)
     local startX, startY = 200, 120
-    gfx.drawTextAligned("Press A to Start!", startX, startY, kTextAlignment.center)
+    local startMessage = "Press A to Start!"
+    if playdate.isCrankDocked() then startMessage = "Undock crank first!" end
+    gfx.drawTextAligned(startMessage, startX, startY, kTextAlignment.center)
 
-    if playdate.buttonJustPressed(playdate.kButtonA) then
+    if playdate.buttonJustPressed(playdate.kButtonA) and not playdate.isCrankDocked() then
         SetState(StatePlaying)
         return
     end
 end
 
 function StateTitle:destroy()
+end
+
+function persistSaveData()
+    saveData = {
+        highScore = highScore
+    }
+    playdate.datastore.write(saveData)
+end
+
+function playdate.gameWillTerminate()
+    persistSaveData()
+end
+
+function playdate.deviceWillSleep()
+    persistSaveData()
 end
 
 
