@@ -22,8 +22,6 @@ function State:init() end
 function State:update() end
 function State:destroy() end
 
-local StatePlaying = State()
-
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
 -- Performance will be slightly enhanced, too.
@@ -63,6 +61,8 @@ function loadAssets()
 end
 
 playdate.ui.crankIndicator:start()
+
+local StatePlaying = State()
 
 function StatePlaying:init()
     StatePlaying.super.init()
@@ -117,11 +117,6 @@ function getYPosFromCrank()
 end
 
 function updatePlayerMovement()
-    if playdate.buttonJustPressed(playdate.kButtonB) then
-        SetState(StateTitle)
-        return
-    end
-
     targetPlayerY = getYPosFromCrank()
     
     local maxSpeed = 20
@@ -179,24 +174,27 @@ function StatePlaying:update()
     local overlaps = playerSprite:overlappingSprites()
     for _, o in pairs(overlaps) do
         if playerSprite:alphaCollision(o) then
-            SetState(StateTitle)
+            SetState(StateGameOver)
         end
     end
 
     mainStarfield:update()
+    drawScoreBar()
+end
 
+function drawScoreBar()
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0, 0, 400, 20)
     gfx.setColor(gfx.kColorBlack)
     gfx.drawTextAligned(string.format("%05d", math.floor(score)), 4, 2)
-    gfx.drawTextAligned(string.format("%05d", math.floor(highScore)), 400-4, 2, kTextAlignment.right)
+    gfx.drawTextAligned(string.format("HI: %05d", math.floor(highScore)), 400-4, 2, kTextAlignment.right)
 end
 
 function StatePlaying:destroy()
     StatePlaying.super.destroy()
     Enemy:removeAll()
-    playerSprite:remove()
-    mainStarfield:remove()
+    --playerSprite:remove() -- gameover needs these
+    --mainStarfield:remove()
 end
 
 function playdate.update()
@@ -242,6 +240,28 @@ end
 
 function StateTitle:destroy()
     StateTitle.super.destroy()
+end
+
+StateGameOver = State()
+
+function StateGameOver:init()
+    StateGameOver.super.init()
+end
+
+function StateGameOver:update()
+    StateGameOver.super.update()
+    mainStarfield:update()
+    drawScoreBar()
+
+    if playdate.buttonJustPressed(playdate.kButtonB) or playdate.buttonJustPressed(playdate.kButtonA) then
+        SetState(StateTitle)
+        return
+    end
+end
+
+function StateGameOver:destroy()
+    mainStarfield:remove()
+    playerSprite:remove()
 end
 
 function persistSaveData()
