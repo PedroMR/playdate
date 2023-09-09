@@ -16,7 +16,13 @@ import "CoreLibs/ui"
 import "starfield"
 import "asteroid"
 
-local StatePlaying = {}
+class("State").extends()
+
+function State:init() end
+function State:update() end
+function State:destroy() end
+
+local StatePlaying = State()
 
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
@@ -59,6 +65,7 @@ end
 playdate.ui.crankIndicator:start()
 
 function StatePlaying:init()
+    StatePlaying.super.init()
     loadAssets()    
 
     -- game values setup
@@ -149,6 +156,7 @@ function updatePlayerMovement()
 end
 
 function StatePlaying:update()
+    StatePlaying.super.update()
     updatePlayerMovement()
 
     score += 0.05
@@ -185,6 +193,7 @@ function StatePlaying:update()
 end
 
 function StatePlaying:destroy()
+    StatePlaying.super.destroy()
     Enemy:removeAll()
     playerSprite:remove()
     mainStarfield:remove()
@@ -209,20 +218,22 @@ function SetState(state)
     CurrentState:init()
 end
 
-StateTitle = {}
+StateTitle = State()
 function StateTitle:init()
+    StateTitle.super.init()
     gfx.setBackgroundColor(gfx.kColorWhite)
     gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
 end
 
 function StateTitle:update()    
+    StateTitle.super.update()
     local titleX, titleY = 200,60
     gfx.drawTextAligned("*-= Asteroid Runner =-*", titleX, titleY, kTextAlignment.center)
     local startX, startY = 200, 120
     local startMessage = "Press A to Start!"
     if playdate.isCrankDocked() then startMessage = "Undock crank first!" end
     gfx.drawTextAligned(startMessage, startX, startY, kTextAlignment.center)
-
+    --TODO crank align to start (warp gate)
     if playdate.buttonJustPressed(playdate.kButtonA) and not playdate.isCrankDocked() then
         SetState(StatePlaying)
         return
@@ -230,6 +241,7 @@ function StateTitle:update()
 end
 
 function StateTitle:destroy()
+    StateTitle.super.destroy()
 end
 
 function persistSaveData()
