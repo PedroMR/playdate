@@ -15,6 +15,7 @@ import "CoreLibs/animation"
 import "CoreLibs/ui"
 import "starfield"
 import "asteroid"
+import "pixelParticles"
 
 class("State").extends()
 
@@ -76,7 +77,6 @@ function StatePlaying:init()
     ticksBetweenAsteroids = 30
 
     particles = {}
-    particles[1] = PixelParticle()
 
     Enemy:removeAll();
 
@@ -158,8 +158,6 @@ end
 function StatePlaying:update()
     StatePlaying.super.update()
     updatePlayerMovement()
-    
-    particles[1].update()
 
     score += 0.05
     if highScore < score then highScore = score end
@@ -179,12 +177,25 @@ function StatePlaying:update()
     local overlaps = playerSprite:overlappingSprites()
     for _, o in pairs(overlaps) do
         if playerSprite:alphaCollision(o) then
+            -- death destroy player
+            local x, y, width, height = playerSprite:getBounds()            
+            table.insert(particles, PixelParticles{
+                x=x, y=y, width=width, height=height
+            })
             SetState(StateGameOver)
         end
     end
-
+ 
     mainStarfield:update()
+    updateParticles()
     drawScoreBar()
+end
+
+function updateParticles()
+    for i,p in pairs(particles) do
+        p:update()
+        if p.maxTicks <= 0 then particles[i] = nil end
+    end
 end
 
 function drawScoreBar()
@@ -257,6 +268,7 @@ end
 function StateGameOver:update()
     StateGameOver.super.update()
     mainStarfield:update()
+    updateParticles()
     drawScoreBar()
     Enemy:updateAll()
     gfx.setColor(gfx.kColorWhite)
