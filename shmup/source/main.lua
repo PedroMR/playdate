@@ -45,6 +45,8 @@ local mainStarfield = nil
 local score = 0
 local highScore = 0
 
+local particles = {}
+
 local saveData = playdate.datastore.read()
 if saveData == nil then
     saveData = { highScore = 0 }
@@ -72,6 +74,9 @@ function StatePlaying:init()
     score = 0
     ticksToAddAsteroid = 30
     ticksBetweenAsteroids = 30
+
+    particles = {}
+    particles[1] = PixelParticle()
 
     Enemy:removeAll();
 
@@ -153,6 +158,8 @@ end
 function StatePlaying:update()
     StatePlaying.super.update()
     updatePlayerMovement()
+    
+    particles[1].update()
 
     score += 0.05
     if highScore < score then highScore = score end
