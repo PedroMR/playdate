@@ -8,7 +8,7 @@ local gfx = playdate.graphics
 local asteroidImageTable = gfx.imagetable.new("Images/asteroid")
 
 function Asteroid:init()
-    Asteroid.super.init()
+    Asteroid.super.init(self)
     self.sprite = gfx.sprite.new(asteroidImageTable:getImage(1))
     self.anim = gfx.animation.loop.new(500, asteroidImageTable, true)
     self.deltaX = -5
@@ -24,7 +24,7 @@ function Asteroid:addToStage()
 end
 
 function Asteroid:update()    
-    Asteroid.super.update()
+    Asteroid.super.update(self)
     self.sprite:setImage(self.anim:image())     
     self.sprite:moveBy(self.deltaX, self.deltaY)
 end

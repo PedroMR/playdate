@@ -2,6 +2,12 @@ class("Enemy").extends()
 
 Enemy.enemies = {}
 
+function Enemy:updateAll()
+    for _, e in pairs(self.enemies) do
+        e:update()
+    end
+end
+
 function Enemy:update()
 end
 

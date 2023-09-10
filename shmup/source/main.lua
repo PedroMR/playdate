@@ -167,9 +167,7 @@ function StatePlaying:update()
         a:addToStage()
     end
 
-    for _, e in pairs(Enemy.enemies) do
-        e:update()
-    end
+    Enemy:updateAll()
 
     local overlaps = playerSprite:overlappingSprites()
     for _, o in pairs(overlaps) do
@@ -192,9 +190,10 @@ end
 
 function StatePlaying:destroy()
     StatePlaying.super.destroy()
-    Enemy:removeAll()
-    --playerSprite:remove() -- gameover needs these
+    playerSprite:remove()
+    -- gameover needs these
     --mainStarfield:remove()
+    --Enemy:removeAll()
 end
 
 function playdate.update()
@@ -252,6 +251,12 @@ function StateGameOver:update()
     StateGameOver.super.update()
     mainStarfield:update()
     drawScoreBar()
+    Enemy:updateAll()
+    gfx.setColor(gfx.kColorWhite)
+    local gameOverX, gameOverY = 200, 216
+    gfx.fillRect(0, gameOverY-4, 400, 240-gameOverY+4)
+    gfx.setColor(gfx.kColorBlack)
+    gfx.drawTextAligned("*GAME OVER*", gameOverX, gameOverY, kTextAlignment.center)
 
     if playdate.buttonJustPressed(playdate.kButtonB) or playdate.buttonJustPressed(playdate.kButtonA) then
         SetState(StateTitle)
@@ -262,6 +267,7 @@ end
 function StateGameOver:destroy()
     mainStarfield:remove()
     playerSprite:remove()
+    Enemy:removeAll()
 end
 
 function persistSaveData()
