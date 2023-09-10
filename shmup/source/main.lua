@@ -174,13 +174,16 @@ function StatePlaying:update()
 
     Enemy:updateAll()
 
+    -- print("pS 0.1 0.1 "..playerSprite:getImage():sample(0.1, 0.1))
+    -- print("pS w h "..playerSprite:getImage():sample(playerSprite.width-1, playerSprite.height-1))
+
     local overlaps = playerSprite:overlappingSprites()
     for _, o in pairs(overlaps) do
         if playerSprite:alphaCollision(o) then
             -- death destroy player
-            local x, y, width, height = playerSprite:getBounds()            
+            local x, y, width, height = playerSprite:getBounds()         
             table.insert(particles, PixelParticles{
-                x=x, y=y, width=width, height=height
+                x=x, y=y, width=width, height=height, img=playerSprite:getImage()
             })
             SetState(StateGameOver)
         end
