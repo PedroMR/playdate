@@ -45,6 +45,8 @@ local mainStarfield = nil
 
 local score = 0
 local highScore = 0
+local playerShield = 2
+local playerShieldTime = 0
 
 local particles = {}
 
@@ -75,6 +77,8 @@ function StatePlaying:init()
     score = 0
     ticksToAddAsteroid = 30
     ticksBetweenAsteroids = 30
+    playerShield = 2
+    playerShieldTime = 0
 
     particles = {}
 
@@ -159,9 +163,6 @@ function StatePlaying:update()
     StatePlaying.super.update()
     updatePlayerMovement()
 
-    score += 0.05
-    if highScore < score then highScore = score end
-
     ticksToAddAsteroid -= 1
     if ticksToAddAsteroid <= 0 then
         ticksToAddAsteroid = ticksBetweenAsteroids
@@ -177,15 +178,28 @@ function StatePlaying:update()
     -- print("pS 0.1 0.1 "..playerSprite:getImage():sample(0.1, 0.1))
     -- print("pS w h "..playerSprite:getImage():sample(playerSprite.width-1, playerSprite.height-1))
 
-    local overlaps = playerSprite:overlappingSprites()
-    for _, o in pairs(overlaps) do
-        if playerSprite:alphaCollision(o) then
-            -- death destroy player
-            local x, y, width, height = playerSprite:getBounds()         
-            table.insert(particles, PixelParticles{
-                x=x, y=y, width=width, height=height, img=playerSprite:getImage()
-            })
-            SetState(StateGameOver)
+    if playerShieldTime > 0 then
+        playerShieldTime -= 1
+        gfx.drawCircleAtPoint(playerSprite.x, playerSprite.y, 9)
+    else
+        score += 0.05
+        if highScore < score then highScore = score end
+    
+        local overlaps = playerSprite:overlappingSprites()
+        for _, o in pairs(overlaps) do
+            if playerSprite:alphaCollision(o) then
+                if playerShield <= 0 then
+                    -- death destroy player
+                    local x, y, width, height = playerSprite:getBounds()         
+                    table.insert(particles, PixelParticles{
+                        x=x, y=y, width=width, height=height, img=playerSprite:getImage()
+                    })
+                    SetState(StateGameOver)
+                else
+                    playerShield -= 1
+                    playerShieldTime = 40
+                end            
+            end
         end
     end
  
@@ -207,6 +221,11 @@ function drawScoreBar()
     gfx.setColor(gfx.kColorBlack)
     gfx.drawTextAligned(string.format("%05d", math.floor(score)), 4, 2)
     gfx.drawTextAligned(string.format("HI: %05d", math.floor(highScore)), 400-4, 2, kTextAlignment.right)
+
+    local shieldX0 = 200 - (playerShield-1)*10
+    for shieldX = shieldX0, shieldX0+20*(playerShield-1), 20 do
+        gfx.drawCircleAtPoint(shieldX, 10, 9)        
+    end
 end
 
 function StatePlaying:destroy()
