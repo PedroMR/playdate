@@ -180,7 +180,7 @@ function StatePlaying:update()
 
     if playerShieldTime > 0 then
         playerShieldTime -= 1
-        gfx.drawCircleAtPoint(playerSprite.x, playerSprite.y, 9)
+        gfx.drawCircleAtPoint(playerSprite.x, playerSprite.y, 11)
     else
         score += 0.05
         if highScore < score then highScore = score end
@@ -197,12 +197,18 @@ function StatePlaying:update()
                     SetState(StateGameOver)
                 else
                     playerShield -= 1
-                    playerShieldTime = 40
+                    playerShieldTime = 80
                 end            
             end
         end
     end
  
+    if playerShieldTime > 0 and playerShieldTime % 8 <= 3 then
+        playerSprite:setVisible(false)
+    else
+        playerSprite:setVisible(true)
+    end
+
     mainStarfield:update()
     updateParticles()
     drawScoreBar()
