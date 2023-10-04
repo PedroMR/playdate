@@ -16,6 +16,7 @@ import "CoreLibs/ui"
 import "starfield"
 import "asteroid"
 import "pixelParticles"
+import "laser"
 
 class("State").extends()
 
@@ -79,6 +80,7 @@ function StatePlaying:init()
     ticksBetweenAsteroids = 30
     playerShield = 2
     playerShieldTime = 0
+    laserAdded = false
 
     particles = {}
 
@@ -171,6 +173,12 @@ function StatePlaying:update()
         local xPos = 400
         a.sprite:moveTo(xPos, yPos)
         a:addToStage()
+    end
+
+    if math.floor(score) == 2 and not laserAdded then
+        laserAdded = true
+        local l = Laser()
+        l:addToStage()
     end
 
     Enemy:updateAll()
