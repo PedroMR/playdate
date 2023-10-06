@@ -10,11 +10,12 @@ Laser.AIMING = 1
 Laser.FIXED = 2
 Laser.FIRING = 3
 Laser.DONE = 4
+Laser.THICKNESS = 25
 
 function Laser:init()
     Laser.super.init(self)
     self:setState(Laser.AIMING)
-    self.y = 160
+    self.y = 50
 end
 
 function Laser:setState(state)
@@ -24,6 +25,19 @@ end
 
 function Laser:addToStage()
     table.insert(Enemy.enemies, self)
+end
+
+function Laser:collidesWithPlayer(playerSprite)
+    if self.state ~= Laser.FIRING and self.state ~= Laser.DONE then
+        return false
+    end
+
+    local correctY = math.abs(playerSprite.y - self.y) <= Laser.THICKNESS/2
+    local correctX = playerSprite.x > self.x0 and playerSprite.x < self.x1
+    
+    print(playerSprite.x, playerSprite.y, self.x0, self.x1, self.y) 
+    
+    return correctX and correctY
 end
 
 function Laser:update()    
@@ -54,8 +68,10 @@ function Laser:update()
         drawOutlinedRect(0, self.y, 400, 3)
         drawOutlinedRect(x0-7, self.y, 400, 9)
         drawOutlinedRect(x0-3, self.y, 400, 17)
-        drawOutlinedRect(x0, self.y, 400, 25)
-        if self.ticksInState >= 20 then
+        drawOutlinedRect(x0, self.y, 400, Laser.THICKNESS)
+        self.x0 = x0
+        self.x1 = 400
+        if self.ticksInState >= 99920 then
             self:setState(Laser.DONE)
         end
     elseif self.state == Laser.DONE then
@@ -64,12 +80,13 @@ function Laser:update()
         drawOutlinedRect(0, self.y, x1+11, 3)
         drawOutlinedRect(0, self.y, x1+7, 9)
         drawOutlinedRect(0, self.y, x1+3, 17)
-        drawOutlinedRect(0, self.y, x1, 25)
+        drawOutlinedRect(0, self.y, x1, Laser.THICKNESS)
+        self.x0 = 0
+        self.x1 = x1
         if self.ticksInState >= 40 then
             self:remove()
         end        
     end
-
 end
 
 function drawOutlinedRect(x0, y, width, thickness)

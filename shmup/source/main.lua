@@ -193,20 +193,14 @@ function StatePlaying:update()
         score += 0.05
         if highScore < score then highScore = score end
     
+        if Enemy:anyCollidesWithPlayer(playerSprite) then
+            playerHit()
+        end
+
         local overlaps = playerSprite:overlappingSprites()
         for _, o in pairs(overlaps) do
             if playerSprite:alphaCollision(o) then
-                if playerShield <= 0 then
-                    -- death destroy player
-                    local x, y, width, height = playerSprite:getBounds()         
-                    table.insert(particles, PixelParticles{
-                        x=x, y=y, width=width, height=height, img=playerSprite:getImage()
-                    })
-                    SetState(StateGameOver)
-                else
-                    playerShield -= 1
-                    playerShieldTime = 80
-                end            
+                playerHit()            
             end
         end
     end
@@ -220,6 +214,20 @@ function StatePlaying:update()
     mainStarfield:update()
     updateParticles()
     drawScoreBar()
+end
+
+function playerHit()
+    if playerShield <= 0 then
+        -- death destroy player
+        local x, y, width, height = playerSprite:getBounds()         
+        -- table.insert(particles, PixelParticles{
+        --     x=x, y=y, width=width, height=height, img=playerSprite:getImage()
+        -- })
+        SetState(StateGameOver)
+    else
+        playerShield -= 1
+        playerShieldTime = 80
+    end
 end
 
 function updateParticles()

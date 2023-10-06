@@ -11,7 +11,16 @@ end
 function Enemy:update()
 end
 
-function Enemy:collidesWithPlayer()
+function Enemy:collidesWithPlayer(playerSprite)
+    return false
+end
+
+function Enemy.anyCollidesWithPlayer(playerSprite)
+    for _, e in pairs(Enemy.enemies) do
+        if e:collidesWithPlayer(playerSprite) then
+            return true
+        end
+    end
     return false
 end
 
