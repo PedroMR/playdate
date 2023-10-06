@@ -61,6 +61,8 @@ function Laser:update()
 
         if self.ticksInState >= 70 then
             self:setState(Laser.FIRING)
+            self.x0 = 400
+            self.x1 = 400
         end
     elseif self.state == Laser.FIRING then
         local speedLaser = 32

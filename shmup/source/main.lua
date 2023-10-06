@@ -193,16 +193,16 @@ function StatePlaying:update()
         score += 0.05
         if highScore < score then highScore = score end
     
-        if Enemy:anyCollidesWithPlayer(playerSprite) then
+        if Enemy.anyCollidesWithPlayer(playerSprite) then
             playerHit()
-        end
-
-        local overlaps = playerSprite:overlappingSprites()
-        for _, o in pairs(overlaps) do
-            if playerSprite:alphaCollision(o) then
-                playerHit()            
+        else
+            local overlaps = playerSprite:overlappingSprites()
+            for _, o in pairs(overlaps) do
+                if playerSprite:alphaCollision(o) then
+                    playerHit()            
+                end
             end
-        end
+        end            
     end
  
     if playerShieldTime > 0 and playerShieldTime % 8 <= 3 then
@@ -217,7 +217,7 @@ function StatePlaying:update()
 end
 
 function playerHit()
-    if playerShield <= 0 then
+    if playerShieldCount <= 0 then
         -- death destroy player
         local x, y, width, height = playerSprite:getBounds()         
         table.insert(particles, PixelParticles{
@@ -225,7 +225,7 @@ function playerHit()
         })
         SetState(StateGameOver)
     else
-        playerShield -= 1
+        playerShieldCount -= 1
         playerShieldTime = 80
     end
 end

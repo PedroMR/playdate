@@ -16,6 +16,7 @@ function Enemy:collidesWithPlayer(playerSprite)
 end
 
 function Enemy.anyCollidesWithPlayer(playerSprite)
+    if playerSprite.y == nil then print("Nil playerSprite.y!") end
     for _, e in pairs(Enemy.enemies) do
         if e:collidesWithPlayer(playerSprite) then
             return true
