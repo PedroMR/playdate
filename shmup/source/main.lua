@@ -38,8 +38,8 @@ local playerImageTable = nil
 local ticksUntilIdle = 0
 local playerImageIndex = 1
 
-local ticksToAddAsteroid = 30
-local ticksBetweenAsteroids = 30
+local ticksToAddAsteroid
+local ticksBetweenAsteroids
 
 local targetPlayerY = 15
 local mainStarfield = nil
@@ -76,7 +76,7 @@ function StatePlaying:init()
 
     -- game values setup
     score = 0
-    ticksToAddAsteroid = 30
+    ticksToAddAsteroid = 9930
     ticksBetweenAsteroids = 30
     playerShieldCount = 2
     playerShieldTime = 0
@@ -293,7 +293,7 @@ function StateTitle:update()
     if playdate.isCrankDocked() then startMessage = "Undock crank first!" end
     gfx.drawTextAligned(startMessage, startX, startY, kTextAlignment.center)
     --TODO crank align to start (warp gate)
-    if playdate.buttonJustPressed(playdate.kButtonA) and not playdate.isCrankDocked() then
+    if playdate.buttonJustPressed(playdate.kButtonA) then --and not playdate.isCrankDocked() then
         SetState(StatePlaying)
         return
     end
