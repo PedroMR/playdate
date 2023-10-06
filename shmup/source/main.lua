@@ -46,7 +46,7 @@ local mainStarfield = nil
 
 local score = 0
 local highScore = 0
-local playerShield = 2
+local playerShieldCount = 2
 local playerShieldTime = 0
 
 local particles = {}
@@ -78,7 +78,7 @@ function StatePlaying:init()
     score = 0
     ticksToAddAsteroid = 30
     ticksBetweenAsteroids = 30
-    playerShield = 2
+    playerShieldCount = 2
     playerShieldTime = 0
     laserAdded = false
 
@@ -220,9 +220,9 @@ function playerHit()
     if playerShield <= 0 then
         -- death destroy player
         local x, y, width, height = playerSprite:getBounds()         
-        -- table.insert(particles, PixelParticles{
-        --     x=x, y=y, width=width, height=height, img=playerSprite:getImage()
-        -- })
+        table.insert(particles, PixelParticles{
+            x=x, y=y, width=width, height=height, img=playerSprite:getImage()
+        })
         SetState(StateGameOver)
     else
         playerShield -= 1
@@ -244,8 +244,8 @@ function drawScoreBar()
     gfx.drawTextAligned(string.format("%05d", math.floor(score)), 4, 2)
     gfx.drawTextAligned(string.format("HI: %05d", math.floor(highScore)), 400-4, 2, kTextAlignment.right)
 
-    local shieldX0 = 200 - (playerShield-1)*10
-    for shieldX = shieldX0, shieldX0+20*(playerShield-1), 20 do
+    local shieldX0 = 200 - (playerShieldCount-1)*10
+    for shieldX = shieldX0, shieldX0+20*(playerShieldCount-1), 20 do
         gfx.drawCircleAtPoint(shieldX, 10, 9)        
     end
 end
